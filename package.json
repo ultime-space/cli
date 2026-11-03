@@ -1,6 +1,6 @@
 {
   "name": "@ultime/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Ultime · cli：通用命令行设施（参数 / 命令注册 / 上下文 / 退出码），零领域依赖",
   "keywords": [
     "cli",
@@ -53,5 +53,6 @@
   },
   "engines": {
     "node": ">=22.18"
-  }
+  },
+  "packageManager": "pnpm@12.6.0"
 }
