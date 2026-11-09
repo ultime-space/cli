@@ -39,4 +39,4 @@ import type { ParsedArgs, CliContext, CliSpec, CommandSpec } from '@ultime/cli'
 ## 反例
 
 - 把 `--check` 当成 cli 内置 flag：它属于调用方的命令。
-- 在 cli 里读 `ultime.config.json`：IO 与配置属于 core 的命令。
+- 在 cli 里读具体项目配置：IO 与配置语义属于调用方命令。

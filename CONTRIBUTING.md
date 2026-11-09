@@ -10,9 +10,9 @@
 
 ## 改动规则
 
-- CLI 只做参数 / 路径 / IO / 退出码；配置合法性与产物内容归 `@ultime/core/tools`。
-- 不 import core 内部源码，只用包名 + exports。
-- 不自维护字段清单；`schema` 从 core 的 studio / tools 投影。
+- CLI 只做参数 / 路径 / IO / 退出码；配置合法性与产物内容归调用方包。
+- 不 import 任何调用方包的源码，只通过公开包名与 exports 依赖。
+- 不自维护具体项目的字段清单；`schema` 之类由调用方投影。
 - 新增命令或退出码：同步 README、`skills.md`、测试与版本戳。
 
 ## 验证
@@ -27,4 +27,4 @@ npm pack --dry-run
 ## 版本
 
 - 0.x 阶段命令面与退出码仍可能调整；破坏性变更写进 README「版本与兼容」。
-- 发布顺序：studio → core → cli。
+- 协议变更先发 cli，再发依赖它的包。

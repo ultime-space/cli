@@ -8,13 +8,13 @@
 
 ## 形态
 
-- **TS 直发**：`exports` 指向 `src/index.ts`；无构建链。
+- **编译 ESM**：`exports` 的 `import` 指向 `dist/index.js`，由 `vp build` 生成；类型来自 `src/*.ts`。
 - `engines.node >= 22.18`；浏览器侧需要打包器。
 - 零第三方运行时依赖。
 
 ## 顺序
 
-`@ultime/cli` → `@ultime/studio` → `@ultime/core`。本包是基础设施，最先发。
+先发 `@ultime/cli`，再由依赖它的包各自发布；顺序由各自仓库执行。
 
 ## 发布前检查
 

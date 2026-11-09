@@ -17,10 +17,10 @@
 依赖方向：
 
 ```text
-调用方（core / kit / viewer） → @ultime/cli
+调用方（任何上层包） → @ultime/cli
 ```
 
-- 本包**不 import** core / kit / viewer。
+- 本包**不 import** 任何调用方包。
 - 调用方注册命令；本包只负责通用流程。
 
 ## 目录
@@ -34,5 +34,5 @@
 
 ## 反例
 
-- 在 `run.ts` 里判断 `ultime.config.json` 是否合法 —— 这是 core 的命令。
+- 在 `run.ts` 里判断具体项目配置是否合法 —— 这是调用方命令的职责。
 - 在 `args.ts` 里内置业务 flag（如 `--check`）—— 业务 flag 由命令自己解释。

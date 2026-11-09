@@ -12,7 +12,7 @@
 
 ## 红线
 
-- **零领域依赖**：不 import core / kit / viewer；不内置 `ultime` 命令。
+- **零领域依赖**：不 import 任何领域包；不内置具体命令。
 - **不做 IO 策略**：读盘写盘与配置路径由命令自己决定。
 - **不引第三方解析库**：`parseArgs` 保持零依赖。
 - **API 变化同步**：`runCli` / `ParsedArgs` / `CliContext` 变化时同步 README、`skills.md` 与测试。

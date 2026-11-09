@@ -48,7 +48,7 @@ export function runCli(spec: CliSpec, argv: string[], ctx: CliContext = processC
   try {
     return command.run(args, ctx)
   } catch (error) {
-    ctx.err(`✗ ${(error as Error).message}`)
+    ctx.err(`✗ ${error instanceof Error ? error.message : String(error)}`)
     return 1
   }
 }

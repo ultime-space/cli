@@ -17,11 +17,11 @@
 ## 只读
 
 - `node_modules/**`；
-- 调用方包（core / kit / viewer）的源码与产物。
+- 调用方包的源码与产物。
 
 ## 禁止
 
-- import core / kit / viewer；
+- import 调用方包；
 - 内置领域命令或业务 flag；
 - 在设施层读盘写盘、定义日志格式；
 - 为方便测试引入第三方参数解析库；

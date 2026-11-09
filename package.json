@@ -1,14 +1,14 @@
 {
   "name": "@ultime/cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Ultime · cli：通用命令行设施（参数 / 命令注册 / 上下文 / 退出码），零领域依赖",
   "keywords": [
+    "argument-parser",
     "cli",
-    "codegen",
-    "css-variables",
-    "design-system",
-    "design-tokens",
-    "dtcg"
+    "command-line",
+    "command-registry",
+    "exit-code",
+    "typescript"
   ],
   "homepage": "https://github.com/ultime-space/cli#readme",
   "bugs": {
