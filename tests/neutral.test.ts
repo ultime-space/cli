@@ -7,16 +7,7 @@ import { describe, expect, it } from 'vite-plus/test'
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const SELF = path.join(ROOT, 'tests/neutral.test.ts')
 
-const DOCS = [
-  'README.md',
-  'AGENTS.md',
-  'CONTRIBUTING.md',
-  'CHANGELOG.md',
-  'agent.md',
-  'skills.md',
-  'llms.txt',
-  'SECURITY.md',
-]
+const DOCS = ['README.md', 'AGENTS.md', 'CONTRIBUTING.md', 'CHANGELOG.md', 'SKILLS.md', 'llms.txt', 'SECURITY.md']
 
 /** CLI 是上游通用设施：不出现其它包的名称或领域示例。 */
 const FORBIDDEN = [

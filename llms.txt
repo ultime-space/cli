@@ -5,10 +5,7 @@
 ## 去哪找
 
 - 怎么用：[README.md](./README.md)
-- 开发规则：[rules/README.md](./rules/README.md)
-- 可调用能力：[skills.md](./skills.md)
-- 操作约束：[agent.md](./agent.md)
-- 仓库入口：[AGENTS.md](./AGENTS.md)
+- 可调用能力：[SKILLS.md](./SKILLS.md)
 
 ## 机器入口
 

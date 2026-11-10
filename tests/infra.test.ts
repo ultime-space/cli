@@ -51,6 +51,10 @@ describe('cli · 参数', () => {
     expect(parseArgs(['run', '--check', '--next']).flags).toEqual({ check: true, next: true })
   })
 
+  it('--key=value 的值允许包含等号', () => {
+    expect(parseArgs(['run', '--define=KEY=VALUE']).flags).toEqual({ define: 'KEY=VALUE' })
+  })
+
   it('空参数返回空命令', () => {
     expect(parseArgs([])).toEqual({ command: '', flags: {}, positional: [] })
   })
