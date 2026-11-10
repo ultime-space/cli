@@ -33,7 +33,6 @@
 ```bash
 pnpm check
 pnpm test
-pnpm typecheck
 ```
 
 没跑或没跑通时，必须说明是哪一条、为什么。

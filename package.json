@@ -1,6 +1,6 @@
 {
   "name": "@ultime/cli",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Ultime · cli：通用命令行设施（参数 / 命令注册 / 上下文 / 退出码），零领域依赖",
   "keywords": [
     "argument-parser",
@@ -22,7 +22,6 @@
   },
   "files": [
     "dist",
-    "src",
     "README.md",
     "llms.txt",
     "SKILLS.md",
@@ -33,7 +32,7 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
   },
@@ -41,18 +40,29 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp build",
+    "build": "vp pack",
     "check": "vp check",
     "test": "vp test",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prepublishOnly": "pnpm check && pnpm test && pnpm build"
+    "size": "size-limit --json",
+    "prepublishOnly": "pnpm check && pnpm test && pnpm build",
+    "prepare": "vp config --no-agent"
   },
   "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.5",
+    "@size-limit/preset-small-lib": "^14.3.0",
     "@types/node": "^22.20.5",
-    "tsx": "^4.23.15",
+    "publint": "^0.3.25",
+    "size-limit": "^14.3.0",
     "typescript": "^5.9.3",
+    "unplugin-unused": "^0.6.0",
     "vite-plus": "1.5.1"
   },
+  "size-limit": [
+    {
+      "name": "@ultime/cli",
+      "path": "dist/index.js"
+    }
+  ],
   "engines": {
     "node": ">=22.18"
   },

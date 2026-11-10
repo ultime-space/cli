@@ -18,7 +18,7 @@
 
 ## 发布前检查
 
-- [ ] `pnpm check` / `pnpm test` / `pnpm typecheck` 全绿
+- [ ] `pnpm check` / `pnpm test` 全绿
 - [ ] `npm pack --dry-run` 只带 `dist` / `src` / `README.md` / 附属文件（不含 `tests/` / `rules/` / `evals`）
 - [ ] `package.json` 版本、tag、`CHANGELOG.md` 一致
 - [ ] README 的 API 与退出码表与实际一致
