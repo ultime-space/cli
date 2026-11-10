@@ -27,17 +27,18 @@ export function parseArgs(argv: string[]): ParsedArgs {
       continue
     }
     if (token.startsWith('--')) {
-      const [key, inline] = token.slice(2).split('=', 2)
-      if (inline != null) {
-        flags[key] = inline
+      const body = token.slice(2)
+      const equal = body.indexOf('=')
+      if (equal !== -1) {
+        flags[body.slice(0, equal)] = body.slice(equal + 1)
         continue
       }
       const next = argv[i + 1]
       if (next && !next.startsWith('-')) {
-        flags[key] = next
+        flags[body] = next
         i += 1
       } else {
-        flags[key] = true
+        flags[body] = true
       }
       continue
     }

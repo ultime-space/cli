@@ -44,6 +44,8 @@ process.exitCode = runCli(spec, process.argv.slice(2), processContext())
 
 `parseArgs` 只认 `command`、`--flag`、`--key value` / `--key=value`；`-h/--help` 与 `-v/--version` 是保留 flag。
 
+AI 入口：[`llms.txt`](./llms.txt)（路由）与 [`SKILLS.md`](./SKILLS.md)（能力表）随包发布。
+
 ## 边界
 
 - **零领域依赖**：不 import 任何领域包，也不认识具体业务对象。

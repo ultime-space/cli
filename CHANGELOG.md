@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3 - 2026-11-10
+
+- 修复 `--key=value` 的值含等号时被截断：`--define=KEY=VALUE` 现在完整保留。
+- 包内新增 `llms.txt` / `SKILLS.md` 作为消费侧 AI 入口；`rules/` 留仓，操作约束并入 `AGENTS.md`。
+
 ## 0.1.2 - 2026-11-09
 
 - 移除仓库内遗留的 `bin/ultime.js`：它不是本包的公开入口，引用的路径也已不存在。
