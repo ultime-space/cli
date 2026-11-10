@@ -9,7 +9,7 @@
 pnpm add @ultime/cli
 ```
 
-需要 Node >= 22.18；包发的是编译后的 ESM（`dist/`），类型来自 `src/*.ts`。
+需要 Node >= 22.18；包发的是编译后的 ESM（`dist/`），类型来自 `dist/*.d.ts`。
 
 ## 用它做什么
 

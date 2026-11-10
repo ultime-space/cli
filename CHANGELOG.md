@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4 - 2026-11-10
+
+- 构建改用 `vp pack`，产物同时生成 `dist/index.js` 与 `dist/index.d.ts`。
+- `exports.types` 指向 `dist/index.d.ts`，包体不再包含 `src/`；安装后类型解析不依赖源码。
+- 无运行时 API 变化。
+
 ## 0.1.3 - 2026-11-10
 
 - 修复 `--key=value` 的值含等号时被截断：`--define=KEY=VALUE` 现在完整保留。
