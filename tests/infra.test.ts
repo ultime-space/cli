@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test'
-import { parseArgs, runCli, type CliContext, type CliSpec } from '../src/index.ts'
+import { CliError, parseArgs, runCli, type CliContext, type CliSpec } from '../src/index.ts'
 
 function collector() {
   const out: string[] = []
@@ -29,6 +29,16 @@ const spec: CliSpec = {
         throw 'raw failure'
       },
     },
+    usage: {
+      run: () => {
+        throw new CliError('缺少 --config', { code: 'USAGE', path: '--config', hint: '补上 --config <path>' })
+      },
+    },
+    config: {
+      run: () => {
+        throw new CliError('配置文件无法解析', { code: 'CONFIG', exitCode: 1, details: { file: 'a.json' } })
+      },
+    },
   },
 }
 
@@ -55,6 +65,10 @@ describe('cli · 参数', () => {
     expect(parseArgs(['run', '--define=KEY=VALUE']).flags).toEqual({ define: 'KEY=VALUE' })
   })
 
+  it('--json 固定按布尔解析，不吞后面的命令名', () => {
+    expect(parseArgs(['--json', 'config'])).toEqual({ command: 'config', flags: { json: true }, positional: [] })
+  })
+
   it('空参数返回空命令', () => {
     expect(parseArgs([])).toEqual({ command: '', flags: {}, positional: [] })
   })
@@ -74,18 +88,33 @@ describe('cli · 运行时', () => {
     expect(out).toEqual(['demo echo [--text]'])
   })
 
-  it('无命令返回 1 并输出 usage', () => {
+  it('单命令 help 缺省时按命令名生成', () => {
     const { ctx, out } = collector()
-    expect(runCli(spec, [], ctx)).toBe(1)
+    expect(runCli(spec, ['status', '--help'], ctx)).toBe(0)
+    expect(out).toEqual(['demo status [options]'])
+  })
+
+  it('无命令返回 2 并输出 usage', () => {
+    const { ctx, out } = collector()
+    expect(runCli(spec, [], ctx)).toBe(2)
     expect(out).toEqual(['demo <command>'])
   })
 
-  it('未知命令与异常都转成退出码 1', () => {
-    const unknown = collector()
-    expect(runCli(spec, ['nope'], unknown.ctx)).toBe(1)
-    expect(unknown.err.join('\n')).toContain('未知命令')
-    expect(unknown.out.join('\n')).toContain('demo <command>')
+  it('未知命令返回 2，并给最近候选', () => {
+    const { ctx, err, out } = collector()
+    expect(runCli(spec, ['statsu'], ctx)).toBe(2)
+    expect(err.join('\n')).toContain('未知命令')
+    expect(err.join('\n')).toContain('是否想用 status')
+    expect(out.join('\n')).toContain('demo <command>')
+  })
 
+  it('未知命令没有候选时列出可用命令', () => {
+    const { ctx, err } = collector()
+    expect(runCli(spec, ['zzzz'], ctx)).toBe(2)
+    expect(err.join('\n')).toContain('可用命令：ping / echo')
+  })
+
+  it('普通异常返回 1，不误报成用法错误', () => {
     const failed = collector()
     expect(runCli(spec, ['fail'], failed.ctx)).toBe(1)
     expect(failed.err.join('\n')).toContain('boom')
@@ -93,6 +122,40 @@ describe('cli · 运行时', () => {
     const raw = collector()
     expect(runCli(spec, ['raw'], raw.ctx)).toBe(1)
     expect(raw.err.join('\n')).toContain('raw failure')
+  })
+
+  it('CliError 带码、位置与提示，默认退出码 2', () => {
+    const { ctx, err } = collector()
+    expect(runCli(spec, ['usage'], ctx)).toBe(2)
+    expect(err).toEqual(['✗ 缺少 --config', '  位置：--config', '  提示：补上 --config <path>'])
+  })
+
+  it('CliError 可覆盖退出码', () => {
+    const { ctx } = collector()
+    expect(runCli(spec, ['config'], ctx)).toBe(1)
+  })
+
+  it('--json 输出机器可读错误，失败不写 stdout', () => {
+    const { ctx, err, out } = collector()
+    expect(runCli(spec, ['--json', 'config'], ctx)).toBe(1)
+    expect(out).toEqual([])
+    expect(JSON.parse(err.join('\n'))).toEqual({
+      error: { code: 'CONFIG', message: '配置文件无法解析', details: { file: 'a.json' } },
+    })
+  })
+
+  it('--json 下未知命令也只写 stderr', () => {
+    const { ctx, err, out } = collector()
+    expect(runCli(spec, ['--json', 'statsu'], ctx)).toBe(2)
+    expect(out).toEqual([])
+    expect(JSON.parse(err.join('\n'))).toEqual({
+      error: {
+        code: 'USAGE',
+        message: '未知命令：statsu',
+        path: 'statsu',
+        hint: '是否想用 status？',
+      },
+    })
   })
 
   it('分发给注册的命令并保留退出码与上下文', () => {
