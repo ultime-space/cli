@@ -3,6 +3,7 @@
  * ---------------------------------------------------------------------------
  * 只认三种形态：`command`、`--flag`、`--key value` / `--key=value`；
  * 不引第三方解析库 —— CLI 必须零依赖可跑。
+ * `--json` 是通用输出开关，固定按布尔解析，不吞后面的命令名。
  */
 
 export interface ParsedArgs {
@@ -10,6 +11,9 @@ export interface ParsedArgs {
   flags: Record<string, string | true>
   positional: string[]
 }
+
+/** 通用布尔 flag：只表达输出形态，不承载业务语义。 */
+const BOOLEAN_FLAGS = new Set(['json'])
 
 export function parseArgs(argv: string[]): ParsedArgs {
   const flags: Record<string, string | true> = {}
@@ -31,6 +35,10 @@ export function parseArgs(argv: string[]): ParsedArgs {
       const equal = body.indexOf('=')
       if (equal !== -1) {
         flags[body.slice(0, equal)] = body.slice(equal + 1)
+        continue
+      }
+      if (BOOLEAN_FLAGS.has(body)) {
+        flags[body] = true
         continue
       }
       const next = argv[i + 1]

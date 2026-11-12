@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 - 待发布
+
+### Added
+
+- `CliError` / `toErrorShape`：机器可读错误，带 `code` / `path` / `hint` / `details` / `exitCode`。
+- `--json` 作为保留布尔 flag：错误以 `{ "error": { … } }` 只写 stderr。
+- 未知命令给最近候选；单命令 help 缺省时按命令名生成。
+
+### Changed
+
+- 退出码语义：0 成功 / 1 命令执行失败 / 2 用法或配置错误；无命令与未知命令从 1 改为 2。
+- 本包不发布 bin、不做命令发现；各产品包自带入口。
+
 ## 0.1.4 - 2026-11-10
 
 - 构建改用 `vp pack`，产物同时生成 `dist/index.js` 与 `dist/index.d.ts`。

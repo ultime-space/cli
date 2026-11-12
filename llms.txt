@@ -9,8 +9,9 @@
 
 ## 机器入口
 
-- 公共出口：`@ultime/cli` 的 `parseArgs` / `runCli` / `processContext` 与类型。
+- 公共出口：`@ultime/cli` 的 `parseArgs` / `runCli` / `processContext` / `CliError` / `toErrorShape` 与类型。
 
 ## 边界
 
 - 通用设施，不含任何领域命令；读盘写盘归调用方。
+- 不发 bin、不做命令发现；每个产品包发布自己的入口。
