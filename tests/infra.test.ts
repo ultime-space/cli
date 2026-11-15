@@ -109,6 +109,29 @@ const strict: CliSpec = {
     error instanceof DomainError ? new CliError(error.message, { code: error.code, path: error.path }) : undefined,
 }
 
+const defaultSpec: CliSpec = {
+  name: 'demo',
+  version: '1.2.3',
+  usage: 'demo [command]',
+  defaultCommand: 'run',
+  commands: {
+    run: {
+      flags: { quiet: 'boolean' },
+      run: (args, ctx) => {
+        ctx.out(`run:${args.positional.join(',')}:${flagBool(args, 'json')}`)
+        return EXIT_OK
+      },
+    },
+    rules: {
+      flags: {},
+      run: (_args, ctx) => {
+        ctx.out('rules')
+        return EXIT_OK
+      },
+    },
+  },
+}
+
 describe('cli · 参数', () => {
   it('解析命令、布尔 flag、带值 flag 与 key=value', () => {
     const args = parseArgs(['build', '--check', '--config=foo.json', '--cwd', 'dir'])
@@ -185,6 +208,52 @@ describe('cli · 参数 schema', () => {
   it('--key= 与 --key "" 都保留空字符串', () => {
     expect(parseArgs(['run', '--title=']).flags).toEqual({ title: '' })
     expect(parseArgs(['run', '--title', '']).flags).toEqual({ title: '' })
+  })
+})
+
+describe('cli · 默认命令', () => {
+  it('parseArgs 在 -- 之后把默认命令与 positional 分开', () => {
+    expect(parseArgs(['--', '-file'], { defaultCommand: 'run', flags: { quiet: 'boolean' } })).toEqual({
+      command: 'run',
+      flags: {},
+      positional: ['-file'],
+    })
+  })
+
+  it('无命令执行默认命令', async () => {
+    const { ctx, out } = collector()
+    expect(await runCli(defaultSpec, [], ctx)).toBe(0)
+    expect(out).toEqual(['run::false'])
+  })
+
+  it('--help 无显式命令仍显示全局 usage', async () => {
+    const { ctx, out } = collector()
+    expect(await runCli(defaultSpec, ['--help'], ctx)).toBe(0)
+    expect(out).toEqual(['demo [command]'])
+  })
+
+  it('-- 之后全部作为默认命令的位置参数', async () => {
+    const { ctx, out } = collector()
+    expect(await runCli(defaultSpec, ['--', '-file', 'x'], ctx)).toBe(0)
+    expect(out).toEqual(['run:-file,x:false'])
+  })
+
+  it('显式命令优先于默认命令', async () => {
+    const { ctx, out } = collector()
+    expect(await runCli(defaultSpec, ['rules'], ctx)).toBe(0)
+    expect(out).toEqual(['rules'])
+  })
+
+  it('未注册的首个 token 作为默认命令的位置参数', async () => {
+    const { ctx, out } = collector()
+    expect(await runCli(defaultSpec, ['file', 'dir'], ctx)).toBe(0)
+    expect(out).toEqual(['run:file,dir:false'])
+  })
+
+  it('默认命令也支持 --json', async () => {
+    const { ctx, out } = collector()
+    expect(await runCli(defaultSpec, ['--json'], ctx)).toBe(0)
+    expect(out).toEqual(['run::true'])
   })
 })
 

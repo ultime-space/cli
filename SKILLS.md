@@ -1,8 +1,8 @@
 # @ultime/cli · 可调用能力
 
 > 定位：AI 可调用的通用命令设施。领域命令不在这里。
-> 适用版本：0.3.x
-> 同步基线：0.3.x（手写；API 变化时同批更新）
+> 适用版本：0.4.x
+> 同步基线：0.4.x（手写；API 变化时同批更新）
 
 ---
 
@@ -42,6 +42,7 @@ import type {
   name: string
   version: string
   usage: string
+  defaultCommand?: string
   commands: Record<string, {
     help?: string | ((args: ParsedArgs) => string)
     flags?: Record<string, 'boolean' | 'string'>
@@ -53,8 +54,8 @@ import type {
 
 ## 错误语义
 
-- 未知命令：`err` 写错误与候选，`out` 写 usage，返回 2；
-- 无命令：`out` 写 usage，返回 2；
+- 未知命令：未设置 `defaultCommand` 时 `err` 写错误与候选、`out` 写 usage，返回 2；设置后未注册 token 转入默认命令的 positional；
+- 无命令：设置 `defaultCommand` 时执行它；否则 `out` 写 usage，返回 2；
 - 未知参数 / 布尔参数带值 / 带值参数缺值：`CliError`（`USAGE`），返回 2；
 - 普通异常：`err` 写 message，`code: 'ERROR'`，返回 1；
 - `CliError`：带 `code` / `path` / `hint`，返回 `exitCode`（默认 2）；

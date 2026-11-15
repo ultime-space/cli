@@ -22,6 +22,8 @@ export type FlagSpec = Record<string, FlagType>
 
 export interface ParseOptions {
   flags?: FlagSpec
+  /** 有默认命令时，`--` 之后全部作为 positional，不再把首个 token 当命令。 */
+  defaultCommand?: string
 }
 
 /** 通用布尔 flag：只表达输出形态，不承载业务语义。 */
@@ -42,6 +44,7 @@ export function parseArgs(argv: string[], options: ParseOptions = {}): ParsedArg
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i]
     if (token === '--') {
+      if (!command && options.defaultCommand) command = options.defaultCommand
       for (const rest of argv.slice(i + 1)) {
         if (!command) command = rest
         else positional.push(rest)

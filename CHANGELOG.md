@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 - 2026-11-15
+
+### Added
+
+- `CliSpec.defaultCommand`：无命令时执行默认命令；设置后未注册的首个 token 作为默认命令的 positional，显式命令优先；有默认命令时 `--` 之后全部按 positional 处理，不改变 help / version。
+
 ## 0.3.1 - 2026-11-15
 
 ### Fixed
