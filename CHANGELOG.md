@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 - 2026-11-15
+
+### Fixed
+
+- `--json` 且无命令时只向 stderr 输出 `{ error }`，不再向 stdout 写 usage，与“`--json` 错误只写 stderr”的契约一致。
+
 ## 0.3.0 - 2026-11-15
 
 ### Added

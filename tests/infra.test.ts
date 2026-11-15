@@ -333,6 +333,16 @@ describe('cli · 运行时', () => {
     expect(out).toEqual(['demo <command>'])
   })
 
+  it('--json 下无命令只写 stderr', async () => {
+    const { ctx, err, out } = collector()
+    expect(await runCli(spec, ['--json'], ctx)).toBe(2)
+    expect(out).toEqual([])
+    const payload = JSON.parse(err.join('\n')) as { error: { code: string; message: string; hint?: string } }
+    expect(payload.error.code).toBe('USAGE')
+    expect(payload.error.message).toBe('缺少命令')
+    expect(payload.error.hint).toContain('ping')
+  })
+
   it('未知命令返回 2，并给最近候选', async () => {
     const { ctx, err, out } = collector()
     expect(await runCli(spec, ['statsu'], ctx)).toBe(2)

@@ -152,7 +152,18 @@ export async function runCli(spec: CliSpec, argv: string[], ctx: CliContext = pr
     return EXIT_OK
   }
   if (!args.command) {
-    ctx.out(spec.usage)
+    if (json) {
+      reportError(
+        ctx,
+        new CliError('缺少命令', {
+          code: 'USAGE',
+          hint: `可用命令：${Object.keys(spec.commands).join(' / ')}`,
+        }),
+        true,
+      )
+    } else {
+      ctx.out(spec.usage)
+    }
     return EXIT_USAGE
   }
 
