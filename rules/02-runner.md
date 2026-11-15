@@ -1,7 +1,7 @@
 # 02 · 参数、命令与退出码
 
 > 定位：`runCli` 的稳定协议。
-> 适用版本：0.3.x
+> 适用版本：0.4.x
 > 关系：架构见 [`01-architecture`](./01-architecture.md)。
 
 ---
@@ -33,6 +33,10 @@ deploy: {
 - 声明 `string` 的 flag 取下一个 token，缺值报 `USAGE`；
 - 未声明的 flag 在传 schema 时按布尔解析，由 `runCli` 拒绝；
 - 同一 flag 的类型必须跨命令一致；命令要么全部声明，要么全部省略。
+
+## 默认命令
+
+`CliSpec.defaultCommand` 指定无命令时执行的命令；`--help` / `--version` 仍走全局短路，不执行默认命令。设置默认命令后，未注册的首个 token 作为默认命令的 positional（显式注册的命令优先）；`--` 之后全部按 positional 处理，不再把首个 token 当命令。
 
 ## 命令注册
 

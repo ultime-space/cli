@@ -22,6 +22,8 @@ export interface CliSpec {
   name: string
   version: string
   usage: string
+  /** 无命令时执行的默认命令；只影响分发，不改变 help / version。 */
+  defaultCommand?: string
   commands: Record<string, CommandSpec>
   /** 把领域错误转成 CliError；返回 undefined 表示保持原样 */
   mapError?: (error: unknown) => CliError | undefined
@@ -134,7 +136,7 @@ export function reportError(ctx: CliContext, error: unknown, json: boolean): voi
 }
 
 export async function runCli(spec: CliSpec, argv: string[], ctx: CliContext = processContext()): Promise<number> {
-  const args = parseArgs(argv, { flags: collectFlags(spec.commands) })
+  const args = parseArgs(argv, { flags: collectFlags(spec.commands), defaultCommand: spec.defaultCommand })
   const json = args.flags.json === true
 
   if (args.flags.version) {
@@ -150,6 +152,13 @@ export async function runCli(spec: CliSpec, argv: string[], ctx: CliContext = pr
     const help = command.help
     ctx.out(typeof help === 'function' ? help(args) : (help ?? `${spec.name} ${args.command} [options]`))
     return EXIT_OK
+  }
+  if (args.command && spec.defaultCommand && !commandOf(spec.commands, args.command)) {
+    args.positional.unshift(args.command)
+    args.command = spec.defaultCommand
+  }
+  if (!args.command && spec.defaultCommand) {
+    args.command = spec.defaultCommand
   }
   if (!args.command) {
     if (json) {

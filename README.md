@@ -65,6 +65,24 @@ commands: {
 - 未声明：传了 schema 时按布尔解析，再由 `runCli` 以 `USAGE` 拒绝；不传 schema 时保持旧的自由解析；
 - 同一 flag 在所有命令中的类型必须一致；命令要么全部声明 `flags`，要么全部省略。
 
+## 默认命令
+
+命令面有默认动作时（例如检查工具的 `run`），在 `CliSpec` 设置 `defaultCommand`：
+
+```ts
+const spec = {
+  name: 'my-cli',
+  version: '0.1.0',
+  usage: 'my-cli [command]',
+  defaultCommand: 'run',
+  commands: {
+    run: { flags: {}, run: (args, ctx) => 0 },
+  },
+}
+```
+
+无命令时执行默认命令；设置默认命令后，未注册的首个 token 也作为它的 positional（显式注册的命令优先），不再报未知命令。有默认命令时 `--` 之后全部作为 positional。`--help` / `--version` 仍走全局短路，不会误执行默认命令。
+
 ## 错误与退出码
 
 命令用 `CliError` 抛机器可读错误；普通异常退化成 `code: 'ERROR'`：
@@ -121,8 +139,9 @@ tests/         参数、运行时、声明校验与包内容边界
 
 ## 版本与兼容
 
-- 当前 `0.3.x`；0.x 阶段 API 仍可能调整。
+- 当前 `0.4.x`；0.x 阶段 API 仍可能调整。
 - 退出码语义：0 成功 / 1 命令执行失败 / 2 用法或配置错误；这是 0.2 起的新约定，升级时按本节目迁移。
+- 0.4 新增 `CliSpec.defaultCommand`；无命令时执行默认命令，`--` 的解析随之调整。
 - 0.3 的破坏性变更：`runCli` 改为异步；声明 `flags` 后未知参数与缺值会被拒绝。迁移方式：入口改成 `process.exitCode = await runCli(...)`，并给命令补 `flags`；不补 `flags` 的命令仍按旧规则解析。
 - 破坏性变更写进 [CHANGELOG](./CHANGELOG.md)，并在本节目说明迁移方式。
 - 发布顺序：本包是基础设施，先于依赖它的包。

@@ -1,6 +1,6 @@
 {
   "name": "@ultime/cli",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Ultime · cli：通用命令行设施（参数 / 命令注册 / 上下文 / 退出码），零领域依赖",
   "keywords": [
     "argument-parser",
