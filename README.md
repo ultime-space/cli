@@ -141,7 +141,7 @@ tests/         参数、运行时、声明校验与包内容边界
 
 - 当前 `0.4.x`；0.x 阶段 API 仍可能调整。
 - 退出码语义：0 成功 / 1 命令执行失败 / 2 用法或配置错误；这是 0.2 起的新约定，升级时按本节目迁移。
-- 0.4 新增 `CliSpec.defaultCommand`；无命令时执行默认命令，`--` 的解析随之调整。
+- 0.4 新增 `CliSpec.defaultCommand`：无命令时执行默认命令；未注册的首个 token 转为它的 positional，显式命令优先；有默认命令时 `--` 之后全部按 positional 处理。
 - 0.3 的破坏性变更：`runCli` 改为异步；声明 `flags` 后未知参数与缺值会被拒绝。迁移方式：入口改成 `process.exitCode = await runCli(...)`，并给命令补 `flags`；不补 `flags` 的命令仍按旧规则解析。
 - 破坏性变更写进 [CHANGELOG](./CHANGELOG.md)，并在本节目说明迁移方式。
 - 发布顺序：本包是基础设施，先于依赖它的包。
