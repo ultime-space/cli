@@ -1,7 +1,7 @@
 # 01 · 架构与依赖
 
 > 定位：CLI 设施的职责、依赖方向与目录分工。
-> 适用版本：0.2.x
+> 适用版本：0.3.x
 > 关系：规则索引见 [`README`](./README.md)；运行协议见 [`02-runner`](./02-runner.md)。
 
 ---
@@ -28,10 +28,10 @@
 
 | 路径 | 职责 |
 |---|---|
-| `src/args.ts` | `command` / `--flag` / `--key value` 解析 |
+| `src/args.ts` | `command` / `--flag` / `--key value` 解析、`FlagSpec` 与 flag 读取 |
 | `src/context.ts` | `CliContext` 与进程实现 |
-| `src/error.ts` | `CliError` / `toErrorShape` |
-| `src/run.ts` | `runCli`：版本 / 帮助 / 未知命令 / 错误转退出码 |
+| `src/error.ts` | `CliError` / `toErrorShape` / 退出码常量 |
+| `src/run.ts` | `runCli`：版本 / 帮助 / 未知命令 / flags 校验 / 错误转退出码 |
 | `src/index.ts` | 公共出口 |
 
 ## 反例

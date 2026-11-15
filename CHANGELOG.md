@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.0 - 2026-11-15
+
+### Added
+
+- `parseArgs(argv, { flags })` 与 `FlagSpec`：命令级声明 `boolean` / `string`，布尔 flag 不再吞后面的 token；`--` 之后全部按 positional 处理。
+- `CommandSpec.flags`：声明后 `runCli` 拒绝未知参数、布尔显式值与带值 flag 缺值，统一报 `USAGE`。
+- `runCli` 支持异步命令与 `mapError`；`help` 支持函数，用于二级命令帮助。
+- 导出 `flagValue` / `flagBool` / `reportError` / `exitCodeOf` 与 `EXIT_OK` / `EXIT_FAIL` / `EXIT_USAGE`。
+
+### Changed
+
+- **Breaking**：`runCli` 返回 `Promise<number>`；入口改为 `process.exitCode = await runCli(...)`。
+- 传入 `flags` schema 时，未声明的 flag 按布尔解析，交给命令校验拒绝；未传 schema 保持旧的自由解析。
+- 空字符串 `--key ""` 保留为值，不再退化成 `true`。
+
+### Fixed
+
+- `--` 不再被当成空名 flag；`--key ''` 与 `--key=` 行为一致。
+
 ## 0.2.0 - 2026-11-12
 
 ### Added

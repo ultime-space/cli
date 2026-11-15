@@ -1,7 +1,7 @@
 # AGENTS.md — @ultime/cli
 
 > 给在本仓库工作的 AI 与协作者：入口、可写 / 只读、红线与验收。
-> 适用版本：0.2.x
+> 适用版本：0.3.x
 
 ## 先读
 
@@ -27,7 +27,9 @@
 - **不发 bin、不做命令发现**：每个产品包自带入口；本包不聚合、不扫描其他包的 bin。
 - **不做 IO 策略**：读盘写盘与配置路径由命令自己决定。
 - **不引第三方解析库**：`parseArgs` 保持零依赖。
-- **API 变化同步**：`runCli` / `ParsedArgs` / `CliContext` 变化时同步 README、`SKILLS.md` 与测试。
+- **runCli 异步**：命令返回 `number | Promise<number>`；入口必须 `await` 后再赋给 `process.exitCode`。
+- **开发方式**：测试先行；阶段完成先 review 代码与文档；文档简洁、机制优先。
+- **API 变化同步**：`runCli` / `ParsedArgs` / `FlagSpec` / `CliContext` 变化时同步 README、`SKILLS.md` 与测试。
 
 ## 验证
 

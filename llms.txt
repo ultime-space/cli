@@ -1,6 +1,6 @@
 # @ultime/cli · AI 索引
 
-适用版本：0.2.x
+适用版本：0.3.x
 
 ## 去哪找
 
@@ -9,7 +9,7 @@
 
 ## 机器入口
 
-- 公共出口：`@ultime/cli` 的 `parseArgs` / `runCli` / `processContext` / `CliError` / `toErrorShape` 与类型。
+- 公共出口：`@ultime/cli` 的 `parseArgs` / `flagBool` / `flagValue` / `runCli` / `reportError` / `processContext` / `CliError` / `toErrorShape` / `exitCodeOf` 与类型。
 
 ## 边界
 
