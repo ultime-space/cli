@@ -1,18 +1,20 @@
 /**
  * run.ts — 命令注册、退出码与错误输出
  * ---------------------------------------------------------------------------
- * 通用设施：只负责版本 / 帮助 / 未知命令 / 错误转换；
+ * 通用设施：只负责版本 / 帮助 / 未知命令 / 参数校验 / 错误转换；
  * 具体命令由调用方注册，cli 包不出现任何领域命令。
  */
 
-import { parseArgs, type ParsedArgs } from './args.ts'
+import { parseArgs, type FlagSpec, type ParsedArgs } from './args.ts'
 import { processContext, type CliContext } from './context.ts'
-import { CliError, toErrorShape } from './error.ts'
+import { CliError, EXIT_OK, EXIT_USAGE, exitCodeOf, toErrorShape } from './error.ts'
 
 export interface CommandSpec {
-  /** 单条命令的 help；缺省时生成 `<name> <command> [options]` */
-  help?: string
-  run: (args: ParsedArgs, ctx: CliContext) => number
+  /** 单条命令的 help；可以是函数，按 positional 生成二级帮助 */
+  help?: string | ((args: ParsedArgs) => string)
+  /** 命令级 flag 声明；声明后未知参数会被拒绝 */
+  flags?: FlagSpec
+  run: (args: ParsedArgs, ctx: CliContext) => number | Promise<number>
 }
 
 export interface CliSpec {
@@ -21,10 +23,15 @@ export interface CliSpec {
   version: string
   usage: string
   commands: Record<string, CommandSpec>
+  /** 把领域错误转成 CliError；返回 undefined 表示保持原样 */
+  mapError?: (error: unknown) => CliError | undefined
 }
 
 /** 未知命令的候选阈值：太小漏提示，太大乱提示。 */
 const SUGGEST_DISTANCE = 2
+
+/** 全局保留 flag：不属于任何命令，也不需要命令声明。 */
+const RESERVED_FLAGS = new Set(['help', 'version', 'json'])
 
 function distance(left: string, right: string): number {
   let previous = Array.from({ length: right.length + 1 }, (_, index) => index)
@@ -53,7 +60,68 @@ function nearest(input: string, candidates: string[]): string | undefined {
   return best?.name
 }
 
-function reportError(ctx: CliContext, error: unknown, json: boolean): void {
+/** 只看自有命令，避免 constructor / __proto__ 等原型键被当成已注册命令。 */
+function commandOf(commands: Record<string, CommandSpec>, name: string): CommandSpec | undefined {
+  return Object.hasOwn(commands, name) ? commands[name] : undefined
+}
+
+/** 汇总所有命令的 flag 声明；全部省略时保持旧的自由解析。 */
+function collectFlags(commands: Record<string, CommandSpec>): FlagSpec | undefined {
+  const specs = Object.values(commands).map((command) => command.flags)
+  const declared = specs.filter((spec): spec is FlagSpec => spec !== undefined)
+  if (declared.length === 0) return undefined
+  if (declared.length !== specs.length) {
+    throw new Error('runCli: commands 的 flags 必须全部声明或全部省略')
+  }
+
+  const merged: FlagSpec = {}
+  for (const spec of declared) {
+    for (const [name, type] of Object.entries(spec)) {
+      const existing = merged[name]
+      if (existing && existing !== type) {
+        throw new Error(`runCli: flag --${name} 在不同命令中的类型不一致（${existing} / ${type}）`)
+      }
+      merged[name] = type
+    }
+  }
+  return merged
+}
+
+function validateFlags(args: ParsedArgs, command: CommandSpec): void {
+  const spec = command.flags
+  if (!spec) return
+
+  for (const [name, value] of Object.entries(args.flags)) {
+    if (RESERVED_FLAGS.has(name)) continue
+    const type = spec[name]
+    if (!type) {
+      const available = Object.keys(spec)
+        .map((key) => `--${key}`)
+        .join(' / ')
+      throw new CliError(`未知参数：--${name}`, {
+        code: 'USAGE',
+        path: `--${name}`,
+        hint: `该命令可用参数：${available || '无'}`,
+      })
+    }
+    if (type === 'boolean' && typeof value === 'string') {
+      throw new CliError(`布尔参数不接受值：--${name}=${value}`, {
+        code: 'USAGE',
+        path: `--${name}`,
+        hint: `只写 --${name}`,
+      })
+    }
+    if (type === 'string' && value === true) {
+      throw new CliError(`--${name} 需要一个值`, {
+        code: 'USAGE',
+        path: `--${name}`,
+        hint: `补上 --${name} <value>`,
+      })
+    }
+  }
+}
+
+export function reportError(ctx: CliContext, error: unknown, json: boolean): void {
   const shape = toErrorShape(error)
   if (json) {
     ctx.err(JSON.stringify({ error: shape }))
@@ -65,29 +133,30 @@ function reportError(ctx: CliContext, error: unknown, json: boolean): void {
   if (shape.hint) ctx.err(`  提示：${shape.hint}`)
 }
 
-function exitCodeOf(error: unknown): number {
-  return error instanceof CliError ? error.exitCode : 1
-}
-
-export function runCli(spec: CliSpec, argv: string[], ctx: CliContext = processContext()): number {
-  const args = parseArgs(argv)
+export async function runCli(spec: CliSpec, argv: string[], ctx: CliContext = processContext()): Promise<number> {
+  const args = parseArgs(argv, { flags: collectFlags(spec.commands) })
   const json = args.flags.json === true
 
   if (args.flags.version) {
     ctx.out(spec.version)
-    return 0
+    return EXIT_OK
   }
   if (args.flags.help) {
-    const command = args.command ? spec.commands[args.command] : undefined
-    ctx.out(command ? (command.help ?? `${spec.name} ${args.command} [options]`) : spec.usage)
-    return 0
+    const command = args.command ? commandOf(spec.commands, args.command) : undefined
+    if (!command) {
+      ctx.out(spec.usage)
+      return EXIT_OK
+    }
+    const help = command.help
+    ctx.out(typeof help === 'function' ? help(args) : (help ?? `${spec.name} ${args.command} [options]`))
+    return EXIT_OK
   }
   if (!args.command) {
     ctx.out(spec.usage)
-    return 2
+    return EXIT_USAGE
   }
 
-  const command = spec.commands[args.command]
+  const command = commandOf(spec.commands, args.command)
   if (!command) {
     const suggestion = nearest(args.command, Object.keys(spec.commands))
     reportError(
@@ -100,13 +169,15 @@ export function runCli(spec: CliSpec, argv: string[], ctx: CliContext = processC
       json,
     )
     if (!json) ctx.out(spec.usage)
-    return 2
+    return EXIT_USAGE
   }
 
   try {
-    return command.run(args, ctx)
+    validateFlags(args, command)
+    return await command.run(args, ctx)
   } catch (error) {
-    reportError(ctx, error, json)
-    return exitCodeOf(error)
+    const mapped = spec.mapError?.(error) ?? error
+    reportError(ctx, mapped, json)
+    return exitCodeOf(mapped)
   }
 }

@@ -1,9 +1,13 @@
 /**
- * error.ts — 机器可读错误
+ * error.ts — 机器可读错误与退出码
  * ---------------------------------------------------------------------------
  * 命令抛 `CliError`，`runCli` 统一转成人类文案或 `--json` 结构；
  * 普通异常没有字段信息，退化成 `code: 'ERROR'`，退出码 1。
  */
+
+export const EXIT_OK = 0
+export const EXIT_FAIL = 1
+export const EXIT_USAGE = 2
 
 export interface CliErrorOptions {
   /** 稳定错误码，例如 `USAGE` / `CONFIG`；上层可追加自己的码。 */
@@ -32,7 +36,7 @@ export class CliError extends Error {
     this.path = options.path
     this.hint = options.hint
     this.details = options.details
-    this.exitCode = options.exitCode ?? 2
+    this.exitCode = options.exitCode ?? EXIT_USAGE
   }
 }
 
@@ -55,4 +59,9 @@ export function toErrorShape(error: unknown): CliErrorShape {
     }
   }
   return { code: 'ERROR', message: error instanceof Error ? error.message : String(error) }
+}
+
+/** 统一退出码：CliError 用自身码，其余按命令执行失败。 */
+export function exitCodeOf(error: unknown): number {
+  return error instanceof CliError ? error.exitCode : EXIT_FAIL
 }
