@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.0 - 2026-11-22
+
+### Added
+
+- `CliContext.color`：可选颜色开关；`processContext()` 按 stderr TTY、`FORCE_COLOR`、`NO_COLOR` / `NODE_DISABLE_COLORS` 与 `TERM` 计算。未设置时视为关闭，测试与管道输出无色。
+- 颜色渲染：错误标红、错误码弱化；自研 ANSI，不新增依赖。
+
+### Changed
+
+- 文本错误首行显示稳定 code：`✗ [USAGE] 缺少 --config`；普通异常的 `ERROR` 不显示。`--json` 结构不变。
+- `details` 明确只进 JSON，文本不展开。
+
 ## 0.4.0 - 2026-11-15
 
 ### Added

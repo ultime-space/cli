@@ -19,3 +19,4 @@ export {
   type CliErrorShape,
 } from './error.ts'
 export { reportError, runCli, type CliSpec, type CommandSpec } from './run.ts'
+export { style, supportsColor, type StyleFormat } from './style.ts'
