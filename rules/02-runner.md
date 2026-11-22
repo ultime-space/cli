@@ -1,7 +1,7 @@
 # 02 · 参数、命令与退出码
 
 > 定位：`runCli` 的稳定协议。
-> 适用版本：0.4.x
+> 适用版本：0.5.x
 > 关系：架构见 [`01-architecture`](./01-architecture.md)。
 
 ---
@@ -70,6 +70,13 @@ runCli({
 | `exitCode` | 默认 2；业务失败可覆盖为 1 |
 
 普通异常没有字段信息，统一成 `{ code: 'ERROR', message }`。`exitCodeOf` 把 `CliError` 的 `exitCode` 或普通异常的 1 统一取出来；`EXIT_OK` / `EXIT_FAIL` / `EXIT_USAGE` 是稳定常量。
+
+文本输出：
+
+- 首行 `✗ [CODE] message`；`ERROR` 视为没有 code，首行退回 `✗ message`；
+- 有 `path` / `hint` 时依次追加 `位置：` / `提示：`；
+- `details` 只进 JSON，文本不展开；
+- 颜色只由 `ctx.color` 决定：`processContext()` 按 stderr TTY 与环境变量计算，其余上下文默认无色；文本去色后信息必须完整。
 
 ## 退出码
 

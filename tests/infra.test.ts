@@ -10,15 +10,22 @@ import {
   parseArgs,
   reportError,
   runCli,
+  style,
+  supportsColor,
   type CliContext,
   type CliSpec,
   type ParsedArgs,
 } from '../src/index.ts'
 
-function collector() {
+function collector(color?: boolean) {
   const out: string[] = []
   const err: string[] = []
-  const ctx: CliContext = { cwd: '/demo', out: (line) => out.push(line), err: (line) => err.push(line) }
+  const ctx: CliContext = {
+    cwd: '/demo',
+    out: (line) => out.push(line),
+    err: (line) => err.push(line),
+    ...(color === undefined ? {} : { color }),
+  }
   return { ctx, out, err }
 }
 
@@ -299,7 +306,7 @@ describe('cli · 声明与校验', () => {
   it('异步异常也走统一错误输出', async () => {
     const { ctx, err } = collector()
     expect(await runCli(strict, ['boom'], ctx)).toBe(EXIT_USAGE)
-    expect(err.join('\n')).toContain('✗ 部署失败')
+    expect(err.join('\n')).toContain('✗ [DEPLOY] 部署失败')
   })
 
   it('mapError 把领域错误转成 CliError', async () => {
@@ -372,7 +379,44 @@ describe('cli · 辅助出口', () => {
     expect(exitCodeOf(new CliError('bad', { code: 'USAGE' }))).toBe(EXIT_USAGE)
 
     reportError(ctx, new CliError('缺少 --config', { code: 'USAGE', path: '--config', hint: '补上' }), false)
-    expect(err).toEqual(['✗ 缺少 --config', '  位置：--config', '  提示：补上'])
+    expect(err).toEqual(['✗ [USAGE] 缺少 --config', '  位置：--config', '  提示：补上'])
+  })
+
+  it('text 错误显示稳定 code，普通异常省略 ERROR', () => {
+    const coded = collector()
+    reportError(coded.ctx, new CliError('缺少 --config', { code: 'CONFIG', details: { file: 'a.json' } }), false)
+    expect(coded.err).toEqual(['✗ [CONFIG] 缺少 --config'])
+
+    const plain = collector()
+    reportError(plain.ctx, new Error('boom'), false)
+    expect(plain.err).toEqual(['✗ boom'])
+  })
+
+  it('颜色由 ctx.color 注入，默认无色', () => {
+    const colored = collector(true)
+    reportError(colored.ctx, new CliError('缺少 --config', { code: 'USAGE', path: '--config', hint: '补上' }), false)
+    expect(colored.err[0]).toContain('\u001b[')
+    expect(colored.err[0]).toContain('[USAGE]')
+
+    const plain = collector(false)
+    reportError(plain.ctx, new CliError('缺少 --config', { code: 'USAGE' }), false)
+    expect(plain.err).toEqual(['✗ [USAGE] 缺少 --config'])
+  })
+})
+
+describe('cli · 终端样式', () => {
+  it('style 只在启用时着色', () => {
+    expect(style(false, 'red', 'x')).toBe('x')
+    expect(style(undefined, 'dim', 'x')).toBe('x')
+    expect(style(true, 'red', 'x')).toContain('\u001b[')
+  })
+
+  it('supportsColor 按环境与 TTY 判定', () => {
+    expect(supportsColor({ isTTY: true }, {})).toBe(true)
+    expect(supportsColor({ isTTY: false }, {})).toBe(false)
+    expect(supportsColor({ isTTY: false }, { FORCE_COLOR: '1' })).toBe(true)
+    expect(supportsColor({ isTTY: true }, { NO_COLOR: '1' })).toBe(false)
+    expect(supportsColor({ isTTY: true }, { TERM: 'dumb' })).toBe(false)
   })
 })
 
@@ -453,7 +497,7 @@ describe('cli · 运行时', () => {
   it('CliError 带码、位置与提示，默认退出码 2', async () => {
     const { ctx, err } = collector()
     expect(await runCli(spec, ['usage'], ctx)).toBe(2)
-    expect(err).toEqual(['✗ 缺少 --config', '  位置：--config', '  提示：补上 --config <path>'])
+    expect(err).toEqual(['✗ [USAGE] 缺少 --config', '  位置：--config', '  提示：补上 --config <path>'])
   })
 
   it('CliError 可覆盖退出码', async () => {

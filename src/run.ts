@@ -8,6 +8,7 @@
 import { parseArgs, type FlagSpec, type ParsedArgs } from './args.ts'
 import { processContext, type CliContext } from './context.ts'
 import { CliError, EXIT_OK, EXIT_USAGE, exitCodeOf, toErrorShape } from './error.ts'
+import { style } from './style.ts'
 
 export interface CommandSpec {
   /** 单条命令的 help；可以是函数，按 positional 生成二级帮助 */
@@ -130,9 +131,10 @@ export function reportError(ctx: CliContext, error: unknown, json: boolean): voi
     return
   }
 
-  ctx.err(`✗ ${shape.message}`)
-  if (shape.path) ctx.err(`  位置：${shape.path}`)
-  if (shape.hint) ctx.err(`  提示：${shape.hint}`)
+  const label = shape.code && shape.code !== 'ERROR' ? ` ${style(ctx.color, 'dim', `[${shape.code}]`)}` : ''
+  ctx.err(`${style(ctx.color, 'red', '✗')}${label} ${shape.message}`)
+  if (shape.path) ctx.err(`  ${style(ctx.color, 'dim', '位置：')}${shape.path}`)
+  if (shape.hint) ctx.err(`  ${style(ctx.color, 'dim', '提示：')}${shape.hint}`)
 }
 
 export async function runCli(spec: CliSpec, argv: string[], ctx: CliContext = processContext()): Promise<number> {

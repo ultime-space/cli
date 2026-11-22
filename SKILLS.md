@@ -1,15 +1,15 @@
 # @ultime/cli · 可调用能力
 
 > 定位：AI 可调用的通用命令设施。领域命令不在这里。
-> 适用版本：0.4.x
-> 同步基线：0.4.x（手写；API 变化时同批更新）
+> 适用版本：0.5.x
+> 同步基线：0.5.x（手写；API 变化时同批更新）
 
 ---
 
 ## 入口
 
 ```ts
-import { flagBool, flagValue, parseArgs, processContext, reportError, runCli, CliError } from '@ultime/cli'
+import { flagBool, flagValue, parseArgs, processContext, reportError, runCli, style, supportsColor, CliError } from '@ultime/cli'
 import type {
   CliContext,
   CliSpec,
@@ -20,6 +20,7 @@ import type {
   ParsedArgs,
   CliErrorOptions,
   CliErrorShape,
+  StyleFormat,
 } from '@ultime/cli'
 ```
 
@@ -31,7 +32,9 @@ import type {
 | `runCli(spec, argv, ctx?)` | `CliSpec` + 参数 | `Promise<退出码>`；版本 / 帮助 / 未知命令 / 校验 / 错误由它处理 |
 | `reportError(ctx, error, json)` | 上下文 + 任意异常 + 是否 JSON | 统一错误输出 |
 | `exitCodeOf(error)` | 任意异常 | `CliError.exitCode` 或 1 |
-| `processContext()` | — | `{ cwd, out, err }` |
+| `processContext()` | — | `{ cwd, out, err, color }` |
+| `style(enabled, format, text)` | 是否着色 + `red` / `yellow` / `dim` + 文案 | 带色或原文 |
+| `supportsColor(stream?, env?)` | 输出流 + 环境变量 | 是否启用颜色 |
 | `CliError(message, options)` | 文案 + `code` / `path` / `hint` / `details` / `exitCode` | 可被 `runCli` 统一输出的错误 |
 | `toErrorShape(error)` | 任意异常 | `{ code, message, path?, hint?, details? }` |
 
@@ -57,8 +60,9 @@ import type {
 - 未知命令：未设置 `defaultCommand` 时 `err` 写错误与候选、`out` 写 usage，返回 2；设置后未注册 token 转入默认命令的 positional；
 - 无命令：设置 `defaultCommand` 时执行它；否则 `out` 写 usage，返回 2；
 - 未知参数 / 布尔参数带值 / 带值参数缺值：`CliError`（`USAGE`），返回 2；
-- 普通异常：`err` 写 message，`code: 'ERROR'`，返回 1；
-- `CliError`：带 `code` / `path` / `hint`，返回 `exitCode`（默认 2）；
+- 普通异常：`err` 写 message，`code: 'ERROR'`，返回 1；文本不显示 `[ERROR]`；
+- `CliError`：带 `code` / `path` / `hint`，返回 `exitCode`（默认 2）；文本首行 `✗ [CODE] message`，`details` 只进 JSON；
+- 颜色：只由 `ctx.color` 控制；`processContext()` 按 stderr TTY 与环境变量计算，其余上下文默认无色；
 - `--json`：错误以 `{ "error": { … } }` 只写 stderr；
 - 版本 / 帮助：返回 0，不执行命令。
 
