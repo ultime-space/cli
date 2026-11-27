@@ -78,6 +78,7 @@ tests/         参数、运行时、声明校验与包内容边界
 
 ## 版本与兼容
 
+- 0.5.2：包内脚本改用 `vp run` 入口，去掉对 pnpm 二进制的硬依赖；API 与退出码不变。
 - 0.5.1：README 改为入口卡，参数与错误细节下沉到 [USAGE.md](./USAGE.md)；API 与退出码不变。
 - 当前 `0.5.x`；0.x 阶段 API 仍可能调整。
 - 0.5 新增：文本错误显示 `[CODE]`，新增 `CliContext.color` 与 `style` / `supportsColor` 导出；`--json` 结构不变。
